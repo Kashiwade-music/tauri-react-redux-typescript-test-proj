@@ -1,3 +1,188 @@
+# Tauri App with React Redux (Typescript)
+
+## How To 
+1. `yarn add @reduxjs/toolkit`
+2. `yarn add react-redex`
+3. `yarn add @types/react-redux`
+4. create a file named `src/app/store.ts` and write a code
+
+```ts
+import { configureStore } from "@reduxjs/toolkit";
+
+export default configureStore({
+  reducer: {},
+});
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+export type AppDispatch = typeof store.dispatch;
+
+```
+
+5. edit `src/index.tsx` as below
+
+```tsx
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import store from "./app/store"; // add
+import { Provider } from "react-redux"; // add
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Provider store={store}> {/* add */}
+      <App />
+    </Provider> {/* add */}
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
+6. create a file named `src/features/counter/counterSlice.ts` and write a code
+
+```ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import * as store from "../../app/store";
+
+// Define a type for the slice state
+interface CounterState {
+  value: number;
+}
+
+// Define the initial state using that type
+const initialState: CounterState = {
+  value: 0,
+};
+
+export const slice = createSlice({
+  name: "counter",
+  initialState,
+  reducers: {
+    increment: (state) => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+      state.value += 1;
+    },
+    decrement: (state) => {
+      state.value -= 1;
+    },
+    incrementByAmount: (state, action: PayloadAction<number>) => {
+      state.value += action.payload;
+    },
+  },
+});
+
+export const { increment, decrement, incrementByAmount } = slice.actions;
+
+// The function below is called a thunk and allows us to perform async logic. It
+// can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
+// will call the thunk with the `dispatch` function as the first argument. Async
+// code can then be executed and other actions can be dispatched
+export const incrementAsync =
+  (amount: number) => (dispatch: store.AppDispatch) => {
+    setTimeout(() => {
+      dispatch(incrementByAmount(amount));
+    }, 1000);
+  };
+
+// The function below is called a selector and allows us to select a value from
+// the state. Selectors can also be defined inline where they're used instead of
+// in the slice file. For example: `useSelector((state) => state.counter.value)`
+export const selectCount = (state: store.RootState) => state.counter.value;
+
+export default slice.reducer;
+
+
+
+```
+
+7. add reducers to the store
+```ts
+import { configureStore } from "@reduxjs/toolkit";
+import counterReducer from "../features/counter/counterSlice";
+
+export const store = configureStore({
+  reducer: { counter: counterReducer }, // add
+});
+
+// Infer the `RootState` and `AppDispatch` types from the store itself
+export type RootState = ReturnType<typeof store.getState>;
+// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
+export type AppDispatch = typeof store.dispatch;
+```
+
+8. create a file named `src/features/counter/Counter.tsx` and write a code
+
+```tsx
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  decrement,
+  increment,
+  incrementByAmount,
+  incrementAsync,
+  selectCount,
+} from "./counterSlice";
+
+export function Counter() {
+  const count = useSelector(selectCount);
+  const dispatch = useDispatch();
+  const [incrementAmount, setIncrementAmount] = useState("2");
+
+  return (
+    <div>
+      <div>
+        <button
+          aria-label="Increment value"
+          onClick={() => dispatch(increment())}
+        >
+          +
+        </button>
+        <span>{count}</span>
+        <button
+          aria-label="Decrement value"
+          onClick={() => dispatch(decrement())}
+        >
+          -
+        </button>
+      </div>
+      <div>
+        <input
+          aria-label="Set increment amount"
+          value={incrementAmount}
+          onChange={(e) => setIncrementAmount(e.target.value)}
+        />
+        <button
+          onClick={() =>
+            dispatch(incrementByAmount(Number(incrementAmount) || 0))
+          }
+        >
+          Add Amount
+        </button>
+        <button
+          onClick={() => dispatch(incrementAsync(Number(incrementAmount) || 0))}
+        >
+          Add Async
+        </button>
+      </div>
+    </div>
+  );
+}
+
+```
+
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
