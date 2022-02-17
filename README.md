@@ -28,12 +28,12 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import store from "./app/store"; // add
+import * as store from "./app/store"; // add
 import { Provider } from "react-redux"; // add
 
 ReactDOM.render(
   <React.StrictMode>
-    <Provider store={store}> {/* add */}
+    <Provider store={store.store}> {/* add */}
       <App />
     </Provider> {/* add */}
   </React.StrictMode>,
